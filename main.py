@@ -1,44 +1,64 @@
 import streamlit as st
 from user_input import geocode_city, create_bounding_box
-from strava_api import fetch_strava_segments, decode_polyline
-from streamlit_folium import st_folium
-import folium
+from strava_api import fetch_strava_segments
+from osm_api import fetch_osm_data
+import pandas as pd
 
-st.title("🏃‍♂️ VacationMatch: Sport Segment Explorer")
+st.title("🏃‍♂️ Vacation Match: Your Activity Planner")
 
 # User inputs
-city = st.text_input("Enter a city", "Aschaffenburg")
+city = st.text_input("Enter a city or coordinates", "Aschaffenburg")
 radius = st.slider("Select radius (km)", 1, 30, 10)
 activity_type = st.selectbox("Choose activity type", ["running", "riding"])
 
-# Access token placeholder
-access_token = st.text_input("Enter your Strava API Access Token", type="password")
-
 if st.button("Explore Segments"):
     try:
+        # Geocoding and bounding box
         lat, lon = geocode_city(city)
         bounds = create_bounding_box(lat, lon, radius)
-        segments = fetch_strava_segments(bounds, activity_type, access_token)
-        
+
+        # Fetch data
+        segments = fetch_strava_segments(bounds, activity_type)
+        osm_data = fetch_osm_data(bounds)
+
+        # Prepare Strava data
+        strava_list = []
         if "segments" in segments and segments["segments"]:
-            st.success(f"Found {len(segments['segments'])} segments!")
-            
-            # Initialize folium map
-            fmap = folium.Map(location=[lat, lon], zoom_start=13)
-
             for seg in segments["segments"]:
-                st.subheader(seg["name"])
-                st.write(f"Distance: {seg['distance']} m")
-                st.write(f"Average grade: {seg['avg_grade']}%")
-
-                try:
-                    coords = decode_polyline(seg["polyline"])
-                    folium.PolyLine(locations=coords, color="blue", weight=3).add_to(fmap)
-                except Exception as e:
-                    st.warning(f"Could not decode polyline: {e}")
-
-            st_data = st_folium(fmap, width=700, height=500)
+                strava_list.append({
+                    "Name": seg.get("name"),
+                    "Distance (m)": round(seg.get("distance", 0), 1),
+                    "Avg Grade (%)": seg.get("avg_grade"),
+                    "Elevation Difference": seg.get("elev_difference"),
+                    "Start Lat/Lon": seg.get("start_latlng"),
+                    "End Lat/Lon": seg.get("end_latlng")
+                })
+            df_strava = pd.DataFrame(strava_list)
+            st.subheader("📈 Strava Segments")
+            st.dataframe(df_strava)
         else:
-            st.warning("No segments found or invalid token.")
+            st.info("No Strava segments found.")
+
+        # Prepare OSM data
+        osm_list = []
+        elements = osm_data.get("elements", [])
+        for el in elements:
+            tags = el.get("tags", {})
+            lat_osm = el.get("lat") or el.get("center", {}).get("lat")
+            lon_osm = el.get("lon") or el.get("center", {}).get("lon")
+            osm_list.append({
+                "Type": el.get("type"),
+                "Amenity": tags.get("amenity", "n/a"),
+                "Name": tags.get("name", "n/a"),
+                "Lat": lat_osm,
+                "Lon": lon_osm
+            })
+        if osm_list:
+            df_osm = pd.DataFrame(osm_list)
+            st.subheader("🗺️ OSM Features")
+            st.dataframe(df_osm)
+        else:
+            st.info("No OSM data found in this area.")
+
     except Exception as e:
         st.error(f"Error: {e}")
