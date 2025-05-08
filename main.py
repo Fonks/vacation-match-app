@@ -3,6 +3,9 @@ from user_input import geocode_city, create_bounding_box
 from strava_api import fetch_strava_segments
 from osm_api import fetch_osm_data
 import pandas as pd
+import pydeck as pdk
+import polyline  # Zum Dekodieren der Strava-Polylines
+
 
 st.title("🏃‍♂️ Vacation Match: Your Activity Planner")
 
@@ -23,19 +26,97 @@ if st.button("Explore Segments"):
 
         # Prepare Strava data
         strava_list = []
+        coords = []
+
         if "segments" in segments and segments["segments"]:
+
+            polyline_paths = []
+
             for seg in segments["segments"]:
+                start = seg.get("start_latlng")
+                if start and len(start) == 2:
+                    coords.append(start)  # Liste für Map
+
                 strava_list.append({
                     "Name": seg.get("name"),
                     "Distance (m)": round(seg.get("distance", 0), 1),
                     "Avg Grade (%)": seg.get("avg_grade"),
                     "Elevation Difference": seg.get("elev_difference"),
-                    "Start Lat/Lon": seg.get("start_latlng"),
+                    "Start Lat/Lon": start,
                     "End Lat/Lon": seg.get("end_latlng")
                 })
-            df_strava = pd.DataFrame(strava_list)
+
+                
+                # Polylines dekodieren
+                polyline_str = seg.get("points")
+                if polyline_str:
+                    decoded = polyline.decode(polyline_str)  # [(lat, lon), ...]
+                    path = [[lon, lat] for lat, lon in decoded]
+                    polyline_paths.append({
+                        "name": seg.get("name", "Unnamed Segment"),
+                        "path": path
+                    })
+
+
+                    df_strava = pd.DataFrame(strava_list)
+
+
+
+
+
+            # --- 🗺️ Interaktive Karte anzeigen ---
+            if coords:
+                lats = [c[0] for c in coords]
+                lons = [c[1] for c in coords]
+                center_lat = sum(lats) / len(lats)
+                center_lon = sum(lons) / len(lons)
+
+                data_for_map = pd.DataFrame({
+                    "lat": lats,
+                    "lon": lons,
+                    "name": [s["Name"] for s in strava_list]
+                })
+
+                strava_scatter = pdk.Layer(
+                    "ScatterplotLayer",
+                    data=data_for_map,
+                    get_position='[lon, lat]',
+                    get_fill_color='[255, 0, 0, 160]',
+                    get_radius=100,
+                    pickable=True
+                )
+
+                strava_paths = pdk.Layer(
+                    "PathLayer",
+                    data=polyline_paths,
+                    get_path="path",
+                    get_width=20,
+                    get_color=[255, 0, 0],
+                    opacity=0.6,
+                    pickable=True
+                )
+
+
+                view_state = pdk.ViewState(
+                    latitude=center_lat,
+                    longitude=center_lon,
+                    zoom=11,
+                    pitch=0
+                )
+
+                st.subheader("🗺️ Karte der Strava-Segmente")
+                st.pydeck_chart(pdk.Deck(
+                    map_style="mapbox://styles/mapbox/light-v9",
+                    initial_view_state=view_state,
+                    layers=[strava_paths, strava_scatter],
+                    tooltip={"text": "{name}"}
+                ))
+
+
+            # --- Tabelle unter der Karte ---
             st.subheader("📈 Strava Segments")
             st.dataframe(df_strava)
+
         else:
             st.info("No Strava segments found.")
 
