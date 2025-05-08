@@ -1,7 +1,7 @@
 import streamlit as st
 from user_input import geocode_city, create_bounding_box
 from strava_api import fetch_strava_segments
-from osm_api import fetch_osm_data
+from osm_api import fetch_osm_data, group_osm_tags
 import pandas as pd
 import pydeck as pdk
 import polyline  # Zum Dekodieren der Strava-Polylines
@@ -120,26 +120,35 @@ if st.button("Explore Segments"):
         else:
             st.info("No Strava segments found.")
 
+        
+
         # Prepare OSM data
         osm_list = []
         elements = osm_data.get("elements", [])
-        for el in elements:
-            tags = el.get("tags", {})
-            lat_osm = el.get("lat") or el.get("center", {}).get("lat")
-            lon_osm = el.get("lon") or el.get("center", {}).get("lon")
-            osm_list.append({
-                "Type": el.get("type"),
-                "Amenity": tags.get("amenity", "n/a"),
-                "Name": tags.get("name", "n/a"),
-                "Lat": lat_osm,
-                "Lon": lon_osm
-            })
-        if osm_list:
-            df_osm = pd.DataFrame(osm_list)
-            st.subheader("🗺️ OSM Features")
-            st.dataframe(df_osm)
+
+        # Gruppieren nach Kategorien
+        grouped_osm = group_osm_tags(elements)
+
+        if grouped_osm:
+            st.subheader("🗺️ OSM Features by Category")
+            for category, items in grouped_osm.items():
+                with st.expander(f"{category} ({len(items)})", expanded=False):
+                    rows = []
+                    for el in items:
+                        tags = el.get("tags", {})
+                        lat_osm = el.get("lat") or el.get("center", {}).get("lat")
+                        lon_osm = el.get("lon") or el.get("center", {}).get("lon")
+                        rows.append({
+                            "Name": tags.get("name", "n/a"),
+                            "Amenity": tags.get("amenity", "n/a"),
+                            "Latitude": lat_osm,
+                            "Longitude": lon_osm
+                        })
+                    df = pd.DataFrame(rows)
+                    st.dataframe(df)
         else:
-            st.info("No OSM data found in this area.")
+            st.info("No categorized OSM data found in this area.")
 
     except Exception as e:
         st.error(f"Error: {e}")
+
