@@ -40,3 +40,12 @@ def fetch_strava_segments(bounds, activity_type):
 
 def decode_polyline(encoded_str):
     return polyline.decode(encoded_str)
+
+def fetch_segment_details(segment_id):
+    url = f"https://www.strava.com/api/v3/segments/{segment_id}"
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
