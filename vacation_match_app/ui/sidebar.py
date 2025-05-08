@@ -1,5 +1,13 @@
 import streamlit as st
 
+from constants import POI_CATEGORIES  # NEU ergänzen
+
+def get_selected_poi_categories():
+    selected_categories = st.multiselect("Wähle POI-Kategorien", list(POI_CATEGORIES.keys()))
+    selected_pois = [poi for cat in selected_categories for poi in POI_CATEGORIES[cat]]
+    return selected_pois
+
+
 def display_sidebar():
     # Eingabe der Städte oder Koordinaten durch den Benutzer
     selected_cities_input = st.sidebar.text_input("Gib bis zu 3 Städte oder Koordinaten (Koordinaten durch ein Komma getrennt) ein")
@@ -17,7 +25,7 @@ def display_sidebar():
 
             # POI-Typen basierend auf den API-Daten auswählen (wird erst angezeigt, nachdem Städte eingegeben wurden)
             # Diese Optionen werden abhängig von den abgerufenen Daten angepasst
-            selected_poi_types = st.sidebar.multiselect("Wähle POI-Typen", ["Restaurant", "Park", "Museum", "Cafe"])
+            selected_poi_types = get_selected_poi_categories()
 
             # Karte mit Stadt auswählen (wird auch erst nach der Auswahl der Städte angezeigt)
             map_city = st.sidebar.selectbox("Stadt für Karte", selected_cities)

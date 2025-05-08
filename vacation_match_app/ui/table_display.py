@@ -4,6 +4,13 @@
 
 import streamlit as st
 import pandas as pd
+from constants import POI_CATEGORIES
+
+def categorize_poi(poi_type):
+    for category, types in POI_CATEGORIES.items():
+        if poi_type in types:
+            return category
+    return "Unkategorisiert"
 
 def show_poi_comparison_table(poi_df: pd.DataFrame, selected_cities: list):
     """
@@ -11,9 +18,11 @@ def show_poi_comparison_table(poi_df: pd.DataFrame, selected_cities: list):
     """
     st.subheader("📋 Vergleichstabelle: POIs in gewählten Städten")
 
-    filtered = poi_df[poi_df["city"].isin(selected_cities)]
-    summary = filtered.groupby(["city", "type"]).size().reset_index(name="count")
-    pivot = summary.pivot(index="type", columns="city", values="count").fillna(0).astype(int)
+    filtered = poi_df[poi_df["city"].isin(selected_cities)].copy()
+    filtered["Kategorie"] = filtered["poi_type"].apply(categorize_poi)
+
+    summary = filtered.groupby(["city", "Kategorie"]).size().reset_index(name="count")
+    pivot = summary.pivot(index="Kategorie", columns="city", values="count").fillna(0).astype(int)
 
     st.dataframe(pivot, use_container_width=True)
 
@@ -23,5 +32,11 @@ def show_city_poi_details(poi_df: pd.DataFrame, selected_city: str):
     Zeigt die POI-Details für eine Stadt in Tabellenform.
     """
     st.subheader(f"📍 POI-Details in {selected_city}")
-    city_pois = poi_df[poi_df["city"] == selected_city][["name", "type"]]
-    st.dataframe(city_pois.reset_index(drop=True), use_container_width=True)
+    city_pois = poi_df[poi_df["city"] == selected_city].copy()
+    city_pois["Kategorie"] = city_pois["poi_type"].apply(categorize_poi)
+
+    grouped = city_pois.groupby("Kategorie")
+    for name, group in grouped:
+        st.subheader(name)
+        st.dataframe(group[["name", "poi_type"]].reset_index(drop=True), use_container_width=True)
+
