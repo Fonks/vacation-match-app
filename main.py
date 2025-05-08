@@ -1,64 +1,86 @@
+# vacation_match_app/main.py
+
 import streamlit as st
-from user_input import geocode_city, create_bounding_box
-from strava_api import fetch_strava_segments
-from osm_api import fetch_osm_data
 import pandas as pd
+from vacation_match_app.ui.sidebar import display_sidebar
+from vacation_match_app.data.fetcher import fetch_strava_segments, fetch_osm_pois
+from vacation_match_app.data.geo_utils import geocode_city, get_bounding_box
+from vacation_match_app.map.visualizer import render_map
+from vacation_match_app.domain.filters import filter_data_for_map_strava, filter_data_for_map_osm, filter_data_for_table
 
-st.title("🏃‍♂️ Vacation Match: Your Activity Planner")
+# Set up custom styling for Streamlit UI
+st.markdown("""
+    <style>
+    html, body, .stApp {
+        font-family: 'Poppins', sans-serif;
+        background-color: #e6f2e6;
+        color: #1a331a;
+    }
+    .stApp {
+        padding: 2rem;
+    }
+    section[data-testid="stSidebar"] {
+        background-color: #d4ecd4;
+        color: #1a331a;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# User inputs
-city = st.text_input("Enter a city or coordinates", "Aschaffenburg")
-radius = st.slider("Select radius (km)", 1, 30, 10)
-activity_type = st.selectbox("Choose activity type", ["running", "riding"])
+# ----------------------------
+# Sidebar - User Input
+# ----------------------------
 
-if st.button("Explore Segments"):
+selected_cities, sportart, selected_poi_types, map_city = display_sidebar()
+
+# ----------------------------
+# API-Datenabruf
+# ----------------------------
+
+if selected_cities:
     try:
-        # Geocoding and bounding box
-        lat, lon = geocode_city(city)
-        bounds = create_bounding_box(lat, lon, radius)
+        # Geokoordinaten und Bounding Boxes abrufen
+        city_coords = {city: geocode_city(city) for city in selected_cities}
+        bounds = {city: get_bounding_box(city) for city in selected_cities}
 
-        # Fetch data
-        segments = fetch_strava_segments(bounds, activity_type)
-        osm_data = fetch_osm_data(bounds)
+        # Strava-Segmente und OSM-POIs abrufen
+        strava_data = {
+            city: fetch_strava_segments(bounds[city], sportart.lower()) for city in selected_cities
+        }
 
-        # Prepare Strava data
-        strava_list = []
-        if "segments" in segments and segments["segments"]:
-            for seg in segments["segments"]:
-                strava_list.append({
-                    "Name": seg.get("name"),
-                    "Distance (m)": round(seg.get("distance", 0), 1),
-                    "Avg Grade (%)": seg.get("avg_grade"),
-                    "Elevation Difference": seg.get("elev_difference"),
-                    "Start Lat/Lon": seg.get("start_latlng"),
-                    "End Lat/Lon": seg.get("end_latlng")
-                })
-            df_strava = pd.DataFrame(strava_list)
-            st.subheader("📈 Strava Segments")
-            st.dataframe(df_strava)
-        else:
-            st.info("No Strava segments found.")
+        osm_data = {}
+        for city in selected_cities:
+            south, west, north, east = bounds[city]
+            osm_data[city] = fetch_osm_pois(south, west, north, east, selected_poi_types)
 
-        # Prepare OSM data
-        osm_list = []
-        elements = osm_data.get("elements", [])
-        for el in elements:
-            tags = el.get("tags", {})
-            lat_osm = el.get("lat") or el.get("center", {}).get("lat")
-            lon_osm = el.get("lon") or el.get("center", {}).get("lon")
-            osm_list.append({
-                "Type": el.get("type"),
-                "Amenity": tags.get("amenity", "n/a"),
-                "Name": tags.get("name", "n/a"),
-                "Lat": lat_osm,
-                "Lon": lon_osm
-            })
-        if osm_list:
-            df_osm = pd.DataFrame(osm_list)
-            st.subheader("🗺️ OSM Features")
-            st.dataframe(df_osm)
-        else:
-            st.info("No OSM data found in this area.")
+        # ----------------------------
+        # Daten filtern
+        # ----------------------------
+
+        filtered_segments = filter_data_for_map_strava(strava_data, map_city)
+        filtered_pois_map = filter_data_for_map_osm(osm_data, selected_poi_types, map_city)
+        filtered_pois_table = filter_data_for_table(osm_data, selected_poi_types, selected_cities)
+
+        # ----------------------------
+        # Hauptbereich
+        # ----------------------------
+
+        st.title("🏃‍♂️ Vacation Match: Dein Städtevergleich & Karte")
+
+        st.subheader(f"🗺️ Karte von {map_city}")
+        render_map(
+            lat=city_coords[map_city][0],
+            lon=city_coords[map_city][1],
+            segments=filtered_segments,
+            pois=filtered_pois_map
+        )
+
+        st.subheader("📋 Vergleichstabelle: POIs in gewählten Städten")
+        st.dataframe(filtered_pois_table)
+
+        st.subheader(f"📌 POIs in {map_city}")
+        st.dataframe(filtered_pois_map)
 
     except Exception as e:
-        st.error(f"Error: {e}")
+        st.error(f"Es gab einen Fehler beim Abrufen der Daten: {e}")
+else:
+    st.warning("Bitte gib mindestens eine Stadt ein.")
