@@ -2,6 +2,7 @@
 
 import streamlit as st
 import pandas as pd
+from dotenv import load_dotenv
 from vacation_match_app.ui.sidebar import display_sidebar
 from vacation_match_app.data.fetcher import fetch_strava_segments, fetch_osm_pois
 from vacation_match_app.data.geo_utils import geocode_city, get_bounding_box

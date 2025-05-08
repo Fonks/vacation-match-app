@@ -1,10 +1,12 @@
-from dotenv import load_dotenv
-load_dotenv()   # lädt .env-Datei in os.environ
 import streamlit as st
 from user_input import geocode_city, create_bounding_box
-from strava_api import fetch_strava_segments
+from strava_api import fetch_strava_segments, decode_polyline
 from osm_api import fetch_osm_data
 import pandas as pd
+from data_cleaning import clean_osm_data, clean_strava_segments
+import pydeck as pdk
+
+
 
 st.title("🏃‍♂️ Vacation Match: Your Activity Planner")
 
@@ -18,6 +20,9 @@ if st.button("Explore Segments"):
         # Geocoding and bounding box
         lat, lon = geocode_city(city)
         bounds = create_bounding_box(lat, lon, radius)
+
+
+
 
         # Fetch data
         segments = fetch_strava_segments(bounds, activity_type)
