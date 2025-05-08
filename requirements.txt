@@ -4,3 +4,4 @@ pandas
 polyline
 streamlit_folium
 geopy
+python-dotenv>=0.21.0
