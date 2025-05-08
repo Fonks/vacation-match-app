@@ -167,9 +167,9 @@ if st.session_state.osm_data_cache:
                 else:
                     st.session_state.selected_osm_ids.discard(el_id)
 
-            if rows:
-                df = pd.DataFrame(rows)
-                st.dataframe(df, use_container_width=True)
+            # if rows:
+            #     df = pd.DataFrame(rows)
+            #     st.dataframe(df, use_container_width=True)
 
 # === Interaktive Karte mit Strava + OSM ===
 if st.session_state.view_state_cache and st.session_state.strava_layers_cache:
