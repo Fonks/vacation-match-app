@@ -37,3 +37,6 @@ build/
 # OS / Editor folders
 Thumbs.db
 .idea/
+
+# 06 / former main code
+main_former.py
