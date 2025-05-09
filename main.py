@@ -2,31 +2,33 @@ import streamlit as st
 from user_input import geocode_city, create_bounding_box
 from strava_api import fetch_strava_segments
 from osm_api import fetch_osm_data, group_osm_tags
+from cache_manager import CacheManager
 import pandas as pd
 import pydeck as pdk
 import polyline
 
+# === Streamlit App Layout ===
 st.set_page_config(layout="wide")
 st.title("🏃‍♂️ Vacation Match: Your Activity Planner")
 
-# === Eingaben ===
+st.markdown("Find the best Strava segments and OSM features for your next vacation!")
+
+# === Initialisiere SessionState bzw Cache ===
+    ## Hier wird der Cache initialisiert, um die Daten zwischen den Interaktionen zu speichern.
+    ## Dies ist wichtig, um die Daten nicht bei jedem Klick neu zu laden und um die Performance zu verbessern.
+CacheManager.initialize_cache()
+
+
+# === Eingabemöglichkeiten für den User ===
 city = st.text_input("Enter a city or coordinates", "Aschaffenburg")
 radius = st.slider("Select radius (km)", 1, 30, 10)
 activity_type = st.selectbox("Choose activity type", ["running", "riding"])
 
-# === Initialisiere SessionState ===
-if "selected_osm_ids" not in st.session_state:
-    st.session_state.selected_osm_ids = set()
-if "osm_data_cache" not in st.session_state:
-    st.session_state.osm_data_cache = None
-if "strava_layers_cache" not in st.session_state:
-    st.session_state.strava_layers_cache = []
-if "view_state_cache" not in st.session_state:
-    st.session_state.view_state_cache = None
-if "df_strava_cache" not in st.session_state:
-    st.session_state.df_strava_cache = None
 
-# === Strava-Segmente + OSM abrufen ===
+
+
+
+# === Strava-Segmente + OSM Daten abrufen ===
 if st.button("Explore Segments"):
     try:
         lat, lon = geocode_city(city)
