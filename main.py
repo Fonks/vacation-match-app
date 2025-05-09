@@ -66,7 +66,9 @@ if st.session_state.df_strava_cache is not None:
 
 
 # === Zeige OSM-Auswahl ===
-
+    ## Hier werden die OSM-Daten in Kategorien gruppiert und angezeigt. Diese kann man da auswählen.
+    ## Die Klasse OSMFeatureSelector findet ihr in der Datei OSM_categories_selection.py.
+    
 
 if st.session_state.osm_data_cache:
     osm_selector = OSMFeatureSelector(
