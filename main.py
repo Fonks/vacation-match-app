@@ -57,16 +57,21 @@ if st.button("Explore Segments"):
 
 
 # === Zeige Strava-Tabelle ===
+    ## Zeigt die Tabelle mit den Strava-Segmenten an, die wir abgerufen haben.
+    ## Hier wird die Methode fetch_strava_segments aufgerufen und die Daten verarbeitet.
 if st.session_state.df_strava_cache is not None:
     st.subheader("📈 Strava Segments")
     st.dataframe(st.session_state.df_strava_cache)
 
 
+
+
 #---------------------------------------------------
 
 
-# === Zeige OSM-Auswahl ===
-    ## Hier werden die OSM-Daten in Kategorien gruppiert und angezeigt. Diese kann man da auswählen.
+
+# === Aneige der OSM-Auswahl ===
+    ## Hier werden die OSM-Daten in Kategorien gruppiert und angezeigt. Diese kann man da auswählen und es wird dann (hoffentlich) dann in der Karte als Punkte oder Icons angezeigt.
     ## Die Klasse OSMFeatureSelector findet ihr in der Datei OSM_categories_selection.py.
     
 

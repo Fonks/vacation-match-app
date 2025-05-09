@@ -7,6 +7,9 @@ class OSMFeatureSelector:
         self.osm_data_cache = osm_data_cache
         self.selected_osm_ids = selected_osm_ids
 
+
+    # = Katogorisierung der POIs in OSM = 
+        # Gruppiert die Kategorien in POI_CATEGORIES und gibt sie zurück.
     def group_osm_tags(self, osm_elements):
         """Group OSM elements by predefined POI categories."""
         grouped = {category: [] for category in POI_CATEGORIES.keys()}
@@ -16,7 +19,9 @@ class OSMFeatureSelector:
             tags = el.get("tags", {})
             categorized = False
 
-            # Check if the element matches any category in POI_CATEGORIES
+            # Checkt, ob das Element irgendeiner Kategorie in POI_CATEGORIES matcht
+            # und fügt es der entsprechenden Kategorie hinzu.
+
             for category, types in POI_CATEGORIES.items():
                 if any(tags.get(key) in types for key in ["amenity", "leisure", "tourism", "shop"]):
                     grouped[category].append(el)
@@ -29,6 +34,11 @@ class OSMFeatureSelector:
 
         return grouped
 
+
+
+
+    # = Anzeige der POIs in den Kategorien =
+        # Hier wird die Anzeige der POIs in den Kategorien gemacht.
     def display_osm_features(self):
         """Display OSM features grouped by category."""
         if not self.osm_data_cache:
@@ -38,6 +48,8 @@ class OSMFeatureSelector:
         grouped_osm = self.group_osm_tags(self.osm_data_cache.get("elements", []))
         st.subheader("🗺️ OSM Features by Category")
 
+
+        # Hier könnte man die Kategorien dynamisch anpassen!
         for category, items in grouped_osm.items():
             if not items:
                 continue  # Skip empty categories
