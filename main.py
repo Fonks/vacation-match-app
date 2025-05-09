@@ -16,6 +16,7 @@ st.markdown("Find the best Strava segments and OSM features for your next vacati
 # === Initialisiere SessionState bzw Cache ===
     ## Hier wird der Cache initialisiert, um die Daten zwischen den Interaktionen zu speichern.
     ## Dies ist wichtig, um die Daten nicht bei jedem Klick neu zu laden und um die Performance zu verbessern.
+    ## Ihr findet die Cache-Manager-Klasse in der Datei cache_manager.py.
 CacheManager.initialize_cache()
 
 
