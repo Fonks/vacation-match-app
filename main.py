@@ -15,9 +15,10 @@ st.markdown("Find the best Strava segments and OSM features for your next vacati
 
 # === Initialisiere SessionState bzw Cache ===
     ## Hier wird der Cache initialisiert, um die Daten zwischen den Interaktionen zu speichern.
-    ## Dies ist wichtig, um die Daten nicht bei jedem Klick neu zu laden und um die Performance zu verbessern.
     ## Ihr findet die Cache-Manager-Klasse in der Datei cache_manager.py.
 CacheManager.initialize_cache()
+
+
 
 
 # === Eingabemöglichkeiten für den User ===
@@ -28,87 +29,11 @@ activity_type = st.selectbox("Choose activity type", ["running", "riding"])
 
 
 
-
 # === Strava-Segmente + OSM Daten abrufen ===
 if st.button("Explore Segments"):
-    try:
-        lat, lon = geocode_city(city)
-        bounds = create_bounding_box(lat, lon, radius)
+    data_fetcher = DataFetcher(city, radius, activity_type)
+    data_fetcher.fetch_data(geocode_city, create_bounding_box)
 
-        # === Strava Segmente abrufen ===
-        segments = fetch_strava_segments(bounds, activity_type)
-        strava_list = []
-        coords = []
-        polyline_paths = []
-
-        if "segments" in segments and segments["segments"]:
-            for seg in segments["segments"]:
-                start = seg.get("start_latlng")
-                if start and len(start) == 2:
-                    coords.append(start)
-                strava_list.append({
-                    "Name": seg.get("name"),
-                    "Distance (m)": round(seg.get("distance", 0), 1),
-                    "Avg Grade (%)": seg.get("avg_grade"),
-                    "Elevation Difference": seg.get("elev_difference"),
-                    "Start Lat/Lon": start,
-                    "End Lat/Lon": seg.get("end_latlng")
-                })
-
-                polyline_str = seg.get("points")
-                if polyline_str:
-                    decoded = polyline.decode(polyline_str)
-                    path = [[lon, lat] for lat, lon in decoded]
-                    polyline_paths.append({
-                        "name": seg.get("name", "Unnamed Segment"),
-                        "path": path
-                    })
-
-            st.session_state.df_strava_cache = pd.DataFrame(strava_list)
-
-            # Zentrum der Karte berechnen
-            lats = [c[0] for c in coords]
-            lons = [c[1] for c in coords]
-            center_lat = sum(lats) / len(lats)
-            center_lon = sum(lons) / len(lons)
-
-            # Layers speichern
-            strava_scatter = pdk.Layer(
-                "ScatterplotLayer",
-                data=pd.DataFrame({
-                    "lat": lats, "lon": lons,
-                    "name": [s["Name"] for s in strava_list]
-                }),
-                get_position='[lon, lat]',
-                get_fill_color='[255, 0, 0, 160]',
-                get_radius=100,
-                pickable=True
-            )
-            strava_paths = pdk.Layer(
-                "PathLayer",
-                data=polyline_paths,
-                get_path="path",
-                get_width=20,
-                get_color=[255, 0, 0],
-                opacity=0.6,
-                pickable=True
-            )
-
-            st.session_state.strava_layers_cache = [strava_paths, strava_scatter]
-            st.session_state.view_state_cache = pdk.ViewState(
-                latitude=center_lat,
-                longitude=center_lon,
-                zoom=11,
-                pitch=0
-            )
-        else:
-            st.warning("No Strava segments found.")
-
-        # === OSM-Daten abrufen und cachen ===
-        st.session_state.osm_data_cache = fetch_osm_data(bounds)
-
-    except Exception as e:
-        st.error(f"Error: {e}")
 
 # === Zeige Strava-Tabelle ===
 if st.session_state.df_strava_cache is not None:

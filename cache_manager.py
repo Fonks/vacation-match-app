@@ -1,9 +1,13 @@
 import streamlit as st
 
+ ## Hier wird der Cache initialisiert, um die Daten zwischen den Interaktionen zu speichern.
+## Dies ist wichtig, um die Daten nicht bei jedem Klick neu zu laden und um die Performance zu verbessern.
+
+
 class CacheManager:
     @staticmethod
     def initialize_cache():
-        """Initialize all required session state variables with default values."""
+        """Initialisiert alle erforderlichen Sitzungsstatusvariablen mit Standardwerten."""
         if "selected_osm_ids" not in st.session_state:
             st.session_state.selected_osm_ids = set()
         if "osm_data_cache" not in st.session_state:
