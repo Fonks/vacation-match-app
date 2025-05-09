@@ -1,5 +1,6 @@
 import streamlit as st
 from user_input import geocode_city, create_bounding_box
+from data_fetcher import DataFetcher
 from strava_api import fetch_strava_segments
 from osm_api import fetch_osm_data, group_osm_tags
 from cache_manager import CacheManager
@@ -7,38 +8,60 @@ import pandas as pd
 import pydeck as pdk
 import polyline
 
+
+# ===============================================
+# ===============================================
+
+
 # === Streamlit App Layout ===
+
 st.set_page_config(layout="wide")
 st.title("🏃‍♂️ Vacation Match: Your Activity Planner")
 
 st.markdown("Find the best Strava segments and OSM features for your next vacation!")
 
+# -----------------------------------------------
+
+
 # === Initialisiere SessionState bzw Cache ===
+
     ## Hier wird der Cache initialisiert, um die Daten zwischen den Interaktionen zu speichern.
     ## Ihr findet die Cache-Manager-Klasse in der Datei cache_manager.py.
 CacheManager.initialize_cache()
 
 
-
+#---------------------------------------------------
 
 # === Eingabemöglichkeiten für den User ===
+
 city = st.text_input("Enter a city or coordinates", "Aschaffenburg")
 radius = st.slider("Select radius (km)", 1, 30, 10)
 activity_type = st.selectbox("Choose activity type", ["running", "riding"])
 
-
+#---------------------------------------------------
 
 
 # === Strava-Segmente + OSM Daten abrufen ===
+
+    ## Hier wird die Klasse DataFetcher aufgerufen, um die Daten von Strava und OSM abzurufen.
+    ## Die Klasse DataFetcher findet ihr in der Datei data_fetcher.py.
+    ## Diese Methode berechnet, welchen Part der Karte wir uns anschauen wollen. und malt uns die Anfangspunkte und die Segmente auf die Karte.
 if st.button("Explore Segments"):
     data_fetcher = DataFetcher(city, radius, activity_type)
     data_fetcher.fetch_data(geocode_city, create_bounding_box)
+
+
+#---------------------------------------------------
 
 
 # === Zeige Strava-Tabelle ===
 if st.session_state.df_strava_cache is not None:
     st.subheader("📈 Strava Segments")
     st.dataframe(st.session_state.df_strava_cache)
+
+
+#---------------------------------------------------
+
 
 # === Zeige OSM-Auswahl ===
 

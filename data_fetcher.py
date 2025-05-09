@@ -126,7 +126,7 @@ class DataFetcher:
         return segments
 
 
-# == OSM- und Strava-Daten abrufen und cachen ==
+# == OSM- und Daten abrufen und cachen ==
     def get_strava_data(self):
         """Return cached Strava data."""
         return st.session_state.df_strava_cache
