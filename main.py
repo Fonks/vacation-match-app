@@ -49,7 +49,7 @@ activity_type = st.selectbox("Choose activity type", ["running", "riding"])
 if st.button("Explore Segments"):
     data_fetcher = DataFetcher(city, radius, activity_type)
     data_fetcher.fetch_data(geocode_city, create_bounding_box)
-
+    st.session_state.osm_data_cache = data_fetcher.get_osm_data()
 
 #---------------------------------------------------
 
