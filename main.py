@@ -3,6 +3,7 @@ from user_input import geocode_city, create_bounding_box
 from data_fetcher import DataFetcher
 from strava_api import fetch_strava_segments
 from osm_api import fetch_osm_data, group_osm_tags
+from OSM_categories_selection import OSMFeatureSelector
 from cache_manager import CacheManager
 import pandas as pd
 import pydeck as pdk
@@ -46,6 +47,7 @@ activity_type = st.selectbox("Choose activity type", ["running", "riding"])
     ## Hier wird die Klasse DataFetcher aufgerufen, um die Daten von Strava und OSM abzurufen.
     ## Die Klasse DataFetcher findet ihr in der Datei data_fetcher.py.
     ## Diese Methode berechnet, welchen Part der Karte wir uns anschauen wollen. und malt uns die Anfangspunkte und die Segmente auf die Karte.
+    ## in der Datei data_fetcher.py können wir auch die Farben der Segmente anpassen.
 if st.button("Explore Segments"):
     data_fetcher = DataFetcher(city, radius, activity_type)
     data_fetcher.fetch_data(geocode_city, create_bounding_box)
@@ -65,62 +67,18 @@ if st.session_state.df_strava_cache is not None:
 
 # === Zeige OSM-Auswahl ===
 
+
 if st.session_state.osm_data_cache:
-    grouped_osm = group_osm_tags(st.session_state.osm_data_cache.get("elements", []))
-    st.subheader("🗺️ OSM Features by Category")
+    osm_selector = OSMFeatureSelector(
+        osm_data_cache=st.session_state.osm_data_cache,
+        selected_osm_ids=st.session_state.selected_osm_ids
+    )
+    osm_selector.display_osm_features()
 
-    for category, items in grouped_osm.items():
-        with st.expander(f"{category} ({len(items)})", expanded=False):
-            rows = []
 
-            # Alle IDs dieser Kategorie
-            category_ids = [f"{category}_{el.get('id')}" for el in items if el.get("lat") or el.get("center")]
-            currently_selected = [cid for cid in category_ids if cid in st.session_state.selected_osm_ids]
-            all_selected = len(currently_selected) == len(category_ids)
 
-            # Checkbox zur Steuerung aller in Kategorie
-            select_all = st.checkbox(
-                f"Alle auswählen ({category})",
-                value=all_selected,
-                key=f"{category}_select_all"
-            )
+#---------------------------------------------------
 
-            for el in items:
-                el_id = f"{category}_{el.get('id')}"
-                tags = el.get("tags", {})
-                lat_osm = el.get("lat") or el.get("center", {}).get("lat")
-                lon_osm = el.get("lon") or el.get("center", {}).get("lon")
-                if not (lat_osm and lon_osm):
-                    continue
-
-                # Auswahlstatus setzen
-                if select_all and el_id not in st.session_state.selected_osm_ids:
-                    st.session_state.selected_osm_ids.add(el_id)
-                elif not select_all and el_id in st.session_state.selected_osm_ids:
-                    st.session_state.selected_osm_ids.discard(el_id)
-
-                # Einzelne Checkbox
-                checked = el_id in st.session_state.selected_osm_ids
-                checked = st.checkbox(
-                    label=tags.get("name", "n/a"),
-                    key=el_id,
-                    value=checked
-                )
-
-                if checked:
-                    st.session_state.selected_osm_ids.add(el_id)
-                    rows.append({
-                        "Name": tags.get("name", "n/a"),
-                        "Amenity": tags.get("amenity", "n/a"),
-                        "Latitude": lat_osm,
-                        "Longitude": lon_osm
-                    })
-                else:
-                    st.session_state.selected_osm_ids.discard(el_id)
-
-            # if rows:
-            #     df = pd.DataFrame(rows)
-            #     st.dataframe(df, use_container_width=True)
 
 # === Interaktive Karte mit Strava + OSM ===
 if st.session_state.view_state_cache and st.session_state.strava_layers_cache:
