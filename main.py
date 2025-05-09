@@ -87,10 +87,29 @@ if st.session_state.osm_data_cache:
 #---------------------------------------------------
 
 
+
+# === POIs Icons auf der Karte ===
+##### PLACEHOLDER
+    ## Hier werden die POIs auf der Karte angezeigt. Die Icons werden in der Klasse OSMFeatureSelector verarbeitet und dann hier angezeigt.
+    ## Man könnte hier auch die Icons anpassen.
+    ## Man könnte die icons einzeln als scatterplotlayer anzeigen.
+
+
+
+#---------------------------------------------------
+
+
 # === Interaktive Karte mit Strava + OSM ===
+    ## Hier wird die Karte mit den Strava-Segmenten und den OSM-POIs angezeigt. Die Segmente werden in der Klasse DataFetcher verarbeitet und dann hier angezeigt.
+    ## Die Methode fetch_strava_segments wird hier aufgerufen und die Daten verarbeitet.
+
+  #Ensures that the map's view state (view_state_cache) and Strava layers (strava_layers_cache) are available in st.session_state before proceeding.  
 if st.session_state.view_state_cache and st.session_state.strava_layers_cache:
+    #layers: Start with the existing Strava layers (e.g., paths and scatterplots).
+    #selected_points: Prepare an empty list to store selected OSM POIs.
     layers = st.session_state.strava_layers_cache.copy()
     selected_points = []
+
 
     if st.session_state.osm_data_cache:
         grouped_osm = group_osm_tags(st.session_state.osm_data_cache.get("elements", []))
