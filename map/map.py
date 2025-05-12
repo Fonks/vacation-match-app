@@ -1,7 +1,7 @@
 import pandas as pd
 import pydeck as pdk
 import streamlit as st
-from osm_api import group_osm_tags
+from data.osm_api import group_osm_tags
 
     ## Hier wird die Klasse MapRenderer definiert, die für das Rendern der Karte verantwortlich ist.
 

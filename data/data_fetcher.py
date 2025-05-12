@@ -2,8 +2,8 @@ import pandas as pd
 import pydeck as pdk
 import polyline
 import streamlit as st
-from strava_api import fetch_strava_segments
-from osm_api import fetch_osm_data
+from data.strava_api import fetch_strava_segments
+from data.osm_api import fetch_osm_data
 
 class DataFetcher:
 
@@ -47,6 +47,8 @@ class DataFetcher:
         coords = []
         polyline_paths = []
 
+        #Was Segmenten Dataframe angezeigt werden soll
+        #Hier wird die Liste der Segmente erstellt, die wir in der Tabelle anzeigen wollen
         if "segments" in segments and segments["segments"]:
             for seg in segments["segments"]:
                 start = seg.get("start_latlng")

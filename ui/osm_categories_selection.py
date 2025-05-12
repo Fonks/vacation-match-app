@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from constants import POI_CATEGORIES  # Import the POI_CATEGORIES constant
+from ui.constants import POI_CATEGORIES  # Import the POI_CATEGORIES constant
 
 class OSMFeatureSelector:
     def __init__(self, osm_data_cache, selected_osm_ids):
