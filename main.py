@@ -1,11 +1,11 @@
 import streamlit as st
-from user_input import geocode_city, create_bounding_box
+from ui.user_input import geocode_city, create_bounding_box
 from data.data_fetcher import DataFetcher
-from strava_api import fetch_strava_segments
-from osm_api import fetch_osm_data, group_osm_tags
-from OSM_categories_selection import OSMFeatureSelector
-from map import MapRenderer
-from cache_manager import CacheManager
+from data.strava_api import fetch_strava_segments
+from data.osm_api import fetch_osm_data, group_osm_tags
+from ui.osm_categories_selection import OSMFeatureSelector
+from map.map import MapRenderer
+from data.cache_manager import CacheManager
 import pandas as pd
 import pydeck as pdk
 import polyline
@@ -73,7 +73,7 @@ if st.session_state.df_strava_cache is not None:
 
 # === Aneige der OSM-Auswahl ===
     ## Hier werden die OSM-Daten in Kategorien gruppiert und angezeigt. Diese kann man da auswählen und es wird dann (hoffentlich) dann in der Karte als Punkte oder Icons angezeigt.
-    ## Die Klasse OSMFeatureSelector findet ihr in der Datei OSM_categories_selection.py.
+    ## Die Klasse OSMFeatureSelector findet ihr in der Datei osm_categories_selection.py.
     
 
 if st.session_state.osm_data_cache:

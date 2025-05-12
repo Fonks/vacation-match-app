@@ -2,8 +2,8 @@ import pandas as pd
 import pydeck as pdk
 import polyline
 import streamlit as st
-from strava_api import fetch_strava_segments
-from osm_api import fetch_osm_data
+from data.strava_api import fetch_strava_segments
+from data.osm_api import fetch_osm_data
 
 class DataFetcher:
 
