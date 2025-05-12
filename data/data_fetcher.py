@@ -47,6 +47,8 @@ class DataFetcher:
         coords = []
         polyline_paths = []
 
+        #Was Segmenten Dataframe angezeigt werden soll
+        #Hier wird die Liste der Segmente erstellt, die wir in der Tabelle anzeigen wollen
         if "segments" in segments and segments["segments"]:
             for seg in segments["segments"]:
                 start = seg.get("start_latlng")

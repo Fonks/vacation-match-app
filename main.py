@@ -1,6 +1,6 @@
 import streamlit as st
 from user_input import geocode_city, create_bounding_box
-from data_fetcher import DataFetcher
+from data.data_fetcher import DataFetcher
 from strava_api import fetch_strava_segments
 from osm_api import fetch_osm_data, group_osm_tags
 from OSM_categories_selection import OSMFeatureSelector
@@ -105,6 +105,7 @@ if st.session_state.osm_data_cache:
 
 
     # Stellt sicher, dass view_state_cache and strava_layers_cache initialiert werden
+    # Findet ihr in cache_manager.py
 if "view_state_cache" not in st.session_state:
     st.session_state.view_state_cache = None    # Initialize as None
 
@@ -113,6 +114,7 @@ if "strava_layers_cache" not in st.session_state:
 
 
     ## Hier wird die Methode render_map aufgerufen, um die Karte anzuzeigen.
+    ## Diese Methode ist in der Klasse MapRenderer in der Datei map.py.
 map_renderer = MapRenderer(
     view_state_cache=st.session_state.view_state_cache,
     strava_layers_cache=st.session_state.strava_layers_cache,
