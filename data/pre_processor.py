@@ -12,8 +12,8 @@ class PreProcessor:
         self.lon_radius = None
         self.bounds = None
         self.sub_bounds = None
-        self.rows = 2 # split the map/bounds 
-        self.cols = 2 # split the map/bounds 
+        self.rows = 1 # split the map/bounds 
+        self.cols = 1 # split the map/bounds 
 
 
     def geocode_city(self):

@@ -1,6 +1,7 @@
 from data.strava_api import fetch_strava_segments
 from data.osm_api import fetch_osm_data
 import os
+import json
 import pandas as pd
 
 class DataFetcher:
@@ -9,7 +10,7 @@ class DataFetcher:
         self.sub_bounds = sub_bounds    
         self.activity_type = activity_type
         self.use_cached = use_cached
-        self.data_path = f"cache/strava_segments_{activity_type}.parquet"
+        self.data_path = f"cache/strava_segments_{activity_type}.json"  # JSON für Cache mit Metadaten
 
     def fetch_data(self):
         """Fetch Strava segments and OSM data."""
@@ -18,28 +19,53 @@ class DataFetcher:
         return strava_data, osm_data
 
     def _fetch_strava_segments(self):
-        """Fetch Strava segments and return a DataFrame."""
-
-        # Check if cached data exists and load it
-        if self.use_cached and os.path.exists(self.data_path):
-            print("📂 Lade Strava-Daten aus Cache-Datei...")
-            df = pd.read_parquet(self.data_path)
-            return df.to_dict(orient="records")  # <- Liste von Dicts
-
-        # If no cached data, fetch from Strava API
-        print("🌐 Rufe Strava API auf...")
+        """Fetch Strava segments intelligently using cache."""
+        os.makedirs("cache", exist_ok=True)
         all_segments = []
         seen_ids = set()
-        for bounding_box in self.sub_bounds:
-            segments_response = fetch_strava_segments(bounding_box, self.activity_type)
-            for seg in segments_response.get("segments", []):
-                if seg["id"] not in seen_ids:
-                    seen_ids.add(seg["id"])
-                    all_segments.append(seg)
+        cache = {"segments": [], "bounds": []}
 
-        # Process the segments into a DataFrame in case of API call
-        df = pd.DataFrame(all_segments)
-        os.makedirs("cache", exist_ok=True)
-        df.to_parquet(self.data_path)
-        print(f"💾 Gespeichert unter {self.data_path}")
-        return df
+        # Cache laden, falls vorhanden
+        if self.use_cached and os.path.exists(self.data_path):
+            with open(self.data_path, "r") as f:
+                cache = json.load(f)
+            print("📂 Vorhandene Cache-Datei geladen.")
+
+        # Prüfen, welche Sub-Bounds noch nicht gecacht wurden
+        for bbox in self.sub_bounds:
+            if not self._is_bbox_cached(cache["bounds"], bbox):
+                print(f"🌐 Rufe Strava API auf für Bereich: {bbox}")
+                response = fetch_strava_segments(bbox, self.activity_type)
+                new_segments = response.get("segments", [])
+                for seg in new_segments:
+                    if seg["id"] not in {s["id"] for s in cache["segments"]}:
+                        cache["segments"].append(seg)
+                cache["bounds"].append(bbox)
+
+        # Cache aktualisieren
+        with open(self.data_path, "w") as f:
+            json.dump(cache, f)
+        print(f"💾 Cache aktualisiert unter {self.data_path}")
+
+        # Nur Segmente zurückgeben, die in aktuellen sub_bounds liegen
+        for seg in cache["segments"]:
+            start = seg.get("start_latlng")
+            if start:
+                for bbox in self.sub_bounds:
+                    if self._bbox_contains(bbox, start):
+                        if seg["id"] not in seen_ids:
+                            seen_ids.add(seg["id"])
+                            all_segments.append(seg)
+                        break  # Nur einmal pro Segment prüfen
+
+        return all_segments  # Als Liste von Dicts zurückgeben
+
+    def _is_bbox_cached(self, cached_bounds, bbox):
+        """Check if a bounding box is already in the cache."""
+        return any(bbox == cached_bbox for cached_bbox in cached_bounds)
+
+    def _bbox_contains(self, bbox, point):
+        """Check if a point is inside a bounding box."""
+        south, west, north, east = bbox
+        lat, lon = point
+        return south <= lat <= north and west <= lon <= east
