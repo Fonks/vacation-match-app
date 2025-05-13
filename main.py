@@ -82,6 +82,7 @@ if st.button("Explore Segments"):
 
 
 
+
     
     st.session_state.df_strava_cache = pd.DataFrame(strava_data)
     st.session_state.osm_data_cache = osm_data
@@ -159,15 +160,6 @@ if st.session_state.osm_data_cache:
 
 # === Interaktive Karte mit Strava + OSM ===
     ## Die Klasse MapRenderer findet ihr in der Datei map.py.
-
-
-    # Stellt sicher, dass view_state_cache and strava_layers_cache initialiert werden
-    # Findet ihr in cache_manager.py
-if "view_state_cache" not in st.session_state:
-    st.session_state.view_state_cache = None    # Initialize as None
-
-if "strava_layers_cache" not in st.session_state:
-    st.session_state.strava_layers_cache = None     # Initialize as None
 
 
     ## Hier wird die Methode render_map aufgerufen, um die Karte anzuzeigen.

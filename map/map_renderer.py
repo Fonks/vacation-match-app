@@ -41,10 +41,7 @@ class MapRenderer:
 
     def render_map(self):
         """Render the interactive map with Strava and OSM layers."""
-        if not self.view_state_cache or not self.strava_layers_cache:
-            # st.warning("Map data is not available.")
-              #habe das hier auskommentiert, weil der sonst unnötigerweise eine Warnung ausgibt, wenn die Daten noch nicht eingegeben wurden.	
-            return
+
 
         # Mit Strava Ebenen beginnen
         layers = self.strava_layers_cache.copy()
