@@ -83,19 +83,21 @@ if st.button("Explore Segments"):
 
 
 
-    
-    st.session_state.df_strava_cache = pd.DataFrame(strava_data)
+    st.session_state.df_strava_cache = df_strava
+    st.session_state.coords_cache = coords
+    st.session_state.polyline_paths_cache = polyline_paths
     st.session_state.osm_data_cache = osm_data
-    st.session_state.selected_osm_ids = set()  # Initialize selected OSM IDs
-    st.session_state.view_state_cache = None    
-    st.session_state.strava_layers_cache = None
-    st.session_state.bounds = bounds
-    st.session_state.sub_bounds = sub_bounds
-    st.session_state.activity_type = activity_type
-    st.session_state.city = city
-    st.session_state.radius = radius
-    st.session_state.lat_radius = pre_processor.lat_radius
-    st.session_state.lon_radius = pre_processor.lon_radius
+    
+
+    # st.session_state.view_state_cache = None    
+    # st.session_state.strava_layers_cache = None
+    # st.session_state.bounds = bounds
+    # st.session_state.sub_bounds = sub_bounds
+    # st.session_state.activity_type = activity_type
+    # st.session_state.city = city
+    # st.session_state.radius = radius
+    # st.session_state.lat_radius = pre_processor.lat_radius
+    # st.session_state.lon_radius = pre_processor.lon_radius
  
 
 
@@ -148,27 +150,28 @@ if st.session_state.osm_data_cache:
 
 
 
-    # Erstellung der Layer für die Karte
+if st.session_state.df_strava_cache is not None and st.session_state.osm_data_cache:
+
+    # Aktualisiere Layers bei jeder Interaktion
     layer = MapLayer()
-    layers, view_state = layer.create_layers(coords, df_strava.to_dict("records"), polyline_paths)
+    layers, view_state = layer.create_layers(
+        st.session_state.coords_cache,
+        st.session_state.df_strava_cache.to_dict("records"),
+        st.session_state.polyline_paths_cache,
+        osm_data_cache=st.session_state.osm_data_cache,
+        selected_osm_ids=st.session_state.selected_osm_ids
+    )
 
+    st.session_state.layers_cache = layers
+    st.session_state.view_state_cache = view_state
 
-    # Caching
-    CacheManager.cache_strava_data(df_strava, layers, view_state)
+    map_renderer = MapRenderer(
+        view_state_cache=view_state,
+        layers_cache=layers,
+        osm_data_cache=st.session_state.osm_data_cache,
+        selected_osm_ids=st.session_state.selected_osm_ids
+    )
 
+    map_renderer.render_map()
 
-
-# === Interaktive Karte mit Strava + OSM ===
-    ## Die Klasse MapRenderer findet ihr in der Datei map.py.
-
-
-    ## Hier wird die Methode render_map aufgerufen, um die Karte anzuzeigen.
-    ## Diese Methode ist in der Klasse MapRenderer in der Datei map.py.
-map_renderer = MapRenderer(
-    view_state_cache=st.session_state.view_state_cache,
-    strava_layers_cache=st.session_state.strava_layers_cache,
-    osm_data_cache=st.session_state.osm_data_cache,
-    selected_osm_ids=st.session_state.selected_osm_ids
-)
-map_renderer.render_map()
 
