@@ -151,4 +151,5 @@ class OSMFeatureSelector:
 
         # Save the selected OSM IDs in the session state
         st.session_state.selected_osm_ids = self.selected_osm_ids    
+
     
