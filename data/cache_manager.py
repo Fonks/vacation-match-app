@@ -7,13 +7,13 @@ import streamlit as st
 class CacheManager:
     @staticmethod
     def initialize_cache():
-        """Initialisiert alle erforderlichen Sitzungsstatusvariablen mit Standardwerten."""
+        """Initialize all required session state variables with default values."""
         if "selected_osm_ids" not in st.session_state:
             st.session_state.selected_osm_ids = set()
         if "osm_data_cache" not in st.session_state:
             st.session_state.osm_data_cache = None
-        if "strava_layers_cache" not in st.session_state:
-            st.session_state.strava_layers_cache = []
+        if "layers_cache" not in st.session_state:
+            st.session_state.layers_cache = []
         if "view_state_cache" not in st.session_state:
             st.session_state.view_state_cache = None
         if "df_strava_cache" not in st.session_state:
@@ -41,3 +41,10 @@ class CacheManager:
         """Remove a value from a set in the session state."""
         if key in st.session_state and isinstance(st.session_state[key], set):
             st.session_state[key].discard(value)
+
+    @staticmethod
+    def cache_strava_data(df, layers, view_state):
+        """Cache Strava data and visualization layers."""
+        st.session_state.df_strava_cache = df
+        st.session_state.layers_cache = layers
+        st.session_state.view_state_cache = view_state

@@ -147,5 +147,9 @@ class OSMFeatureSelector:
                         # Zeige die ausgewählten Elemente in einer Tabelle an
                         if rows:
                             df = pd.DataFrame(rows)
-                            st.dataframe(df, use_container_width=True)    
+                            st.dataframe(df, use_container_width=True)
+
+        # Save the selected OSM IDs in the session state
+        st.session_state.selected_osm_ids = self.selected_osm_ids    
+
     

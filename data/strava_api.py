@@ -38,5 +38,3 @@ def fetch_strava_segments(bounds, activity_type):
     response = requests.get(url, params=params, headers=headers)
     return response.json()
 
-def decode_polyline(encoded_str):
-    return polyline.decode(encoded_str)
