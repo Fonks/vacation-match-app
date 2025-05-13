@@ -73,7 +73,7 @@ class OSMFeatureSelector:
 
         # Gruppiere die OSM-Elemente nach Kategorien und Subkategorien
         grouped_osm = self.group_osm_tags(self.osm_data_cache.get("elements", []))
-        st.subheader("🗺️ OSM POIs nach Kategorien")
+        st.subheader("🔵 OSM POIs nach Kategorien")
 
         # Iteriere über die Hauptkategorien
         for category, subcategories in grouped_osm.items():

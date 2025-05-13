@@ -13,7 +13,6 @@ from ui.osm_categories_selection import OSMFeatureSelector
 
 
 
-
 # ===============================================
 # ===============================================
 
@@ -21,9 +20,10 @@ from ui.osm_categories_selection import OSMFeatureSelector
 # === Streamlit App Layout ===
 
 st.set_page_config(layout="wide")
-st.title("🏃‍♂️ Vacation Match: Your Activity Planner")
+st.title("🏃‍♂️ Vacation Match!")
+st.subheader("Dein Strava-OpenStreetMap-Explorer")
 
-st.markdown("Find the best Strava segments and OSM features for your next vacation!")
+st.markdown("Finde die besten Strava-Segmente in der Umgebung und entdecke interessante Orte mit OSM-Daten. ")
 
 # -----------------------------------------------
 
@@ -38,10 +38,10 @@ CacheManager.initialize_cache()
 #---------------------------------------------------
 
 # === Eingabemöglichkeiten für den User ===
-
-city = st.text_input("Enter a city or coordinates", "Aschaffenburg")
-radius = st.slider("Select radius (km)", 1, 30, 1)
-activity_type = st.selectbox("Choose activity type", ["running", "riding"])
+st.sidebar.title("Einstellungen")
+city = st.sidebar.text_input("Gib eine Stadt ein", "Aschaffenburg")
+radius = st.sidebar.slider("Wähle den Radius (km)", 1, 30, 1)
+activity_type = st.sidebar.selectbox("Wähle eine Sportart", ["running", "riding"])
 
 #---------------------------------------------------
 
@@ -51,7 +51,7 @@ activity_type = st.selectbox("Choose activity type", ["running", "riding"])
     ## TODO: comment this out
 
 
-if st.button("Explore Segments"):
+if st.sidebar.button("Anzeigen"):
 
 
     ## PREPROCESSING
@@ -80,28 +80,11 @@ if st.button("Explore Segments"):
 
 
 
-
-
-
     st.session_state.df_strava_cache = df_strava
     st.session_state.coords_cache = coords
     st.session_state.polyline_paths_cache = polyline_paths
     st.session_state.osm_data_cache = osm_data
     
-
-    # st.session_state.view_state_cache = None    
-    # st.session_state.strava_layers_cache = None
-    # st.session_state.bounds = bounds
-    # st.session_state.sub_bounds = sub_bounds
-    # st.session_state.activity_type = activity_type
-    # st.session_state.city = city
-    # st.session_state.radius = radius
-    # st.session_state.lat_radius = pre_processor.lat_radius
-    # st.session_state.lon_radius = pre_processor.lon_radius
- 
-
-
-
 
 #---------------------------------------------------
 
@@ -110,7 +93,7 @@ if st.button("Explore Segments"):
     ## Zeigt die Tabelle mit den Strava-Segmenten an, die wir abgerufen haben.
     ## Hier wird die Methode fetch_strava_segments aufgerufen und die Daten verarbeitet.
 if st.session_state.df_strava_cache is not None:
-    st.subheader("📈 Strava Segments")
+    st.subheader("🟠 Strava Segmente")
     st.dataframe(st.session_state.df_strava_cache)
 
 
