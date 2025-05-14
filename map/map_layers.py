@@ -81,7 +81,7 @@ class MapLayer:
             data=polyline_paths,
             get_path="path",
             get_width=20,
-            get_color=[255, 0, 0],
+            get_color=[107,170, 226],
             opacity=0.6,
             pickable=True
         )
