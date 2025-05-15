@@ -144,6 +144,8 @@ if st.session_state.osm_data_cache:
     ## Man könnte hier auch die Icons anpassen.
     ## Man könnte die icons einzeln als scatterplotlayer anzeigen.
 
+# Symbol-URL-Mapping für Icons (PNG oder SVG URLs)
+
 
 
 #---------------------------------------------------
