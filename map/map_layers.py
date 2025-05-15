@@ -1,9 +1,7 @@
 import pydeck as pdk
 import pandas as pd
 from ui.constants import POI_CATEGORIES  # Import POI_CATEGORIES
-from data.osm_api import fetch_osm_data, group_osm_tags
-
-
+from data.osm_api import fetch_osm_data
 
 class MapLayer:
     @staticmethod
@@ -60,15 +58,17 @@ class MapLayer:
             # Add the category under the name
             name = f"{name} \n ({category})"
 
-            # Add to POI data
-            poi_data.append({
-                "lat": lat,
-                "lon": lon,
-                "amenity": amenity,
-                "name": name,
-                "category": category,
-                "color": category_colors.get(category, [0, 0, 0])  # Default to black if no color is found
-            })
+            # Add to POI data if the element is selected
+            el_id = f"{category}_{el.get('id')}"
+            if el_id in selected_osm_ids:
+                poi_data.append({
+                    "lat": lat,
+                    "lon": lon,
+                    "amenity": amenity,
+                    "name": name,
+                    "category": category,
+                    "color": category_colors.get(category, [0, 0, 0])  # Default to black if no color is found
+                })
 
         # Convert to DataFrame
         poi_df = pd.DataFrame(poi_data)
@@ -81,15 +81,17 @@ class MapLayer:
         size_scale = calculate_size_scale(zoom_level)
 
         # Create a ScatterplotLayer for OSM POIs
-        poi_layer = pdk.Layer(
-            "ScatterplotLayer",
-            data=poi_df,
-            get_position='[lon, lat]',
-            get_fill_color='color',  # Use the color column for color coding
-            get_radius=5 * size_scale,  # Adjust radius dynamically
-            opacity=0.8,
-            pickable=True
-        )
+        poi_layer = None
+        if not poi_df.empty:
+            poi_layer = pdk.Layer(
+                "ScatterplotLayer",
+                data=poi_df,
+                get_position='[lon, lat]',
+                get_fill_color='color',  # Use the color column for color coding
+                get_radius=5 * size_scale,  # Adjust radius dynamically
+                opacity=0.8,
+                pickable=True
+            )
 
         # === Strava Data Processing ===
         lats = [c[0] for c in coords]
@@ -121,7 +123,9 @@ class MapLayer:
         )
 
         # Combine layers
-        layers = [poi_layer, strava_scatter, strava_paths]
+        layers = [strava_scatter, strava_paths]
+        if poi_layer:
+            layers.append(poi_layer)
 
         view_state = pdk.ViewState(
             latitude=center_lat,
@@ -131,12 +135,3 @@ class MapLayer:
         )
 
         return layers, view_state
-
-
-
-
-
-
-
-
-
