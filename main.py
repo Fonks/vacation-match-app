@@ -1,14 +1,16 @@
 import streamlit as st
-from ui.user_input import geocode_city, create_bounding_box
-from data.data_fetcher import DataFetcher
-from data.strava_api import fetch_strava_segments
-from data.osm_api import fetch_osm_data, group_osm_tags
-from ui.osm_categories_selection import OSMFeatureSelector
-from map.map import MapRenderer
-from data.cache_manager import CacheManager
 import pandas as pd
-import pydeck as pdk
-import polyline
+from data.cache_manager import CacheManager
+from data.pre_processor import PreProcessor
+from data.data_fetcher import DataFetcher
+from data.post_processor import DataProcessor
+from map.map_layers import MapLayer
+from map.map_renderer import MapRenderer
+
+
+from ui.osm_categories_selection import OSMFeatureSelector
+
+
 
 
 # ===============================================
@@ -18,9 +20,10 @@ import polyline
 # === Streamlit App Layout ===
 
 st.set_page_config(layout="wide")
-st.title("🏃‍♂️ Vacation Match: Your Activity Planner")
+st.title("🏃‍♂️ Vacation Match!")
+st.subheader("Dein Strava-OpenStreetMap-Explorer")
 
-st.markdown("Find the best Strava segments and OSM features for your next vacation!")
+st.markdown("Finde die besten Strava-Segmente in der Umgebung und entdecke interessante Orte mit OSM-Daten. ")
 
 # -----------------------------------------------
 
@@ -35,24 +38,53 @@ CacheManager.initialize_cache()
 #---------------------------------------------------
 
 # === Eingabemöglichkeiten für den User ===
-
-city = st.text_input("Enter a city or coordinates", "Aschaffenburg")
-radius = st.slider("Select radius (km)", 1, 30, 10)
-activity_type = st.selectbox("Choose activity type", ["running", "riding"])
+st.sidebar.title("Einstellungen")
+city = st.sidebar.text_input("Gib eine Stadt ein", "Aschaffenburg")
+radius = st.sidebar.slider("Wähle den Radius (km)", 1, 30, 1)
+activity_type = st.sidebar.selectbox("Wähle eine Sportart", ["running", "riding"])
 
 #---------------------------------------------------
 
 
 # === Strava-Segmente + OSM Daten abrufen ===
 
-    ## Hier wird die Klasse DataFetcher aufgerufen, um die Daten von Strava und OSM abzurufen.
-    ## Die Klasse DataFetcher findet ihr in der Datei data_fetcher.py.
-    ## Diese Methode berechnet, welchen Part der Karte wir uns anschauen wollen. und malt uns die Anfangspunkte und die Segmente auf die Karte.
-    ## in der Datei data_fetcher.py können wir auch die Farben der Segmente anpassen.
-if st.button("Explore Segments"):
-    data_fetcher = DataFetcher(city, radius, activity_type)
-    data_fetcher.fetch_data(geocode_city, create_bounding_box)
-    st.session_state.osm_data_cache = data_fetcher.get_osm_data()
+    ## TODO: comment this out
+
+
+if st.sidebar.button("Anzeigen"):
+
+
+    ## PREPROCESSING
+    # Hier wird die Methode geocode_city aufgerufen, um die Stadt zu geokodieren
+    pre_processor = PreProcessor(city, radius) # Initialisiere die Klasse PreProcessor mit Stadt und Radius
+    pre_processor.geocode_city() # Hier wird die Methode geocode_city aufgerufen, um die Stadt zu geokodieren
+
+    # Hier wird die Methode create_bounding_box aufgerufen, um die Bounding Box zu erstellen
+    bounds = pre_processor.create_bounding_box() 
+    
+
+    # Hier wird die Methode split_bounds aufgerufen, um die Bounding Box in kleinere Bereiche zu unterteilen
+    sub_bounds = pre_processor.split_bounds() 
+
+
+    # FETCHEN DER STRAVA SEGMENTE
+    # Hier wird die Methode fetch_strava_segments aufgerufen und die Daten verarbeitet
+    data_fetcher = DataFetcher(bounds, sub_bounds, activity_type, use_cached=True) # Initialisiere die Klasse DataFetcher mit den Bounding Boxen und dem Aktivitätstyp
+    strava_data, osm_data = data_fetcher.fetch_data()  # Hier kommen die Daten von Strava und OSM
+
+
+    # POSTPROCESSING
+    # Hier wird die Methode process_strava_data aufgerufen, um die Strava-Segmente zu verarbeiten
+    data_processor = DataProcessor() # Initialisiere die Klasse DataProcessor 
+    df_strava, coords, polyline_paths = data_processor.process_strava_data(strava_data) # Hier kommt pd.DataFrame(strava_list), coords, polyline_paths
+
+
+
+    st.session_state.df_strava_cache = df_strava
+    st.session_state.coords_cache = coords
+    st.session_state.polyline_paths_cache = polyline_paths
+    st.session_state.osm_data_cache = osm_data
+    
 
 #---------------------------------------------------
 
@@ -61,7 +93,7 @@ if st.button("Explore Segments"):
     ## Zeigt die Tabelle mit den Strava-Segmenten an, die wir abgerufen haben.
     ## Hier wird die Methode fetch_strava_segments aufgerufen und die Daten verarbeitet.
 if st.session_state.df_strava_cache is not None:
-    st.subheader("📈 Strava Segments")
+    st.subheader("🟠 Strava Segmente")
     st.dataframe(st.session_state.df_strava_cache)
 
 
@@ -100,26 +132,29 @@ if st.session_state.osm_data_cache:
 #---------------------------------------------------
 
 
-# === Interaktive Karte mit Strava + OSM ===
-    ## Die Klasse MapRenderer findet ihr in der Datei map.py.
 
+if st.session_state.df_strava_cache is not None and st.session_state.osm_data_cache:
 
-    # Stellt sicher, dass view_state_cache and strava_layers_cache initialiert werden
-    # Findet ihr in cache_manager.py
-if "view_state_cache" not in st.session_state:
-    st.session_state.view_state_cache = None    # Initialize as None
+    # Aktualisiere Layers bei jeder Interaktion
+    layer = MapLayer()
+    layers, view_state = layer.create_layers(
+        st.session_state.coords_cache,
+        st.session_state.df_strava_cache.to_dict("records"),
+        st.session_state.polyline_paths_cache,
+        osm_data_cache=st.session_state.osm_data_cache,
+        selected_osm_ids=st.session_state.selected_osm_ids
+    )
 
-if "strava_layers_cache" not in st.session_state:
-    st.session_state.strava_layers_cache = None     # Initialize as None
+    st.session_state.layers_cache = layers
+    st.session_state.view_state_cache = view_state
 
+    map_renderer = MapRenderer(
+        view_state_cache=view_state,
+        layers_cache=layers,
+        osm_data_cache=st.session_state.osm_data_cache,
+        selected_osm_ids=st.session_state.selected_osm_ids
+    )
 
-    ## Hier wird die Methode render_map aufgerufen, um die Karte anzuzeigen.
-    ## Diese Methode ist in der Klasse MapRenderer in der Datei map.py.
-map_renderer = MapRenderer(
-    view_state_cache=st.session_state.view_state_cache,
-    strava_layers_cache=st.session_state.strava_layers_cache,
-    osm_data_cache=st.session_state.osm_data_cache,
-    selected_osm_ids=st.session_state.selected_osm_ids
-)
-map_renderer.render_map()
+    map_renderer.render_map()
+
 
