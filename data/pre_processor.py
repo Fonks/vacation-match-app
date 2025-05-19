@@ -51,14 +51,12 @@ class PreProcessor:
         """
         delta = self.radius / 111  # Roughly 1° latitude ~ 111 km
         self.bounds = [self.lat_radius - delta, self.lon_radius - delta, self.lat_radius + delta, self.lon_radius + delta]
-        print(f"Bounding box pre: {self.bounds}")
         return self.bounds
 
 
     # == Hier wird die Funktion split_bounds definiert, um die bounds in kleinere Bereiche zu unterteilen ==
 
     def split_bounds(self):
-        print(f"Bounding box: {self.bounds}")
         south, west, north, east = self.bounds
         lat_step = (north - south) / self.rows
         lon_step = (east - west) / self.cols

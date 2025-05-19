@@ -48,25 +48,6 @@ class MapRenderer:
 
 
 
-        # # Mit Strava Ebenen beginnen
-        # layers = self.strava_layers_cache.copy()
-
-        # # Fügt die OSM-POIs hinzu, wenn sie ausgewählt sind
-        # selected_points = self._get_selected_points()
-        # if selected_points:
-        #     df_osm_selected = pd.DataFrame(selected_points)
-        #     osm_layer = pdk.Layer(
-        #         "ScatterplotLayer",
-        #         data=df_osm_selected,
-        #         get_position='[lon, lat]',
-        #         get_fill_color='[0, 128, 255, 160]',
-        #         get_radius=80,
-        #         pickable=True
-        #     )
-        #     layers.append(osm_layer)
-        #     st.subheader("📍 Gewählte POIs")
-        #     st.dataframe(df_osm_selected)
-
         # Render die Karte
         st.subheader("🗺️ Karte mit Strava-Segmenten & OSM-POIs")
         st.pydeck_chart(pdk.Deck(
