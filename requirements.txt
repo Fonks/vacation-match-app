@@ -2,5 +2,7 @@ streamlit
 requests
 pandas
 polyline
-streamlit_folium
-geopy
+pydeck
+os
+json
+python-dotenv
