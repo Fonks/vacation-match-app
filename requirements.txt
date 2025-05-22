@@ -3,6 +3,4 @@ requests
 pandas
 polyline
 pydeck
-os
-json
 python-dotenv
