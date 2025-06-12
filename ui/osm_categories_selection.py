@@ -73,7 +73,8 @@ class OSMFeatureSelector:
 
         # Gruppiere die OSM-Elemente nach Kategorien und Subkategorien
         grouped_osm = self.group_osm_tags(self.osm_data_cache.get("elements", []))
-        st.subheader("🔵 OSM POIs nach Kategorien")
+        st.subheader("🔵Point of Interest nach Kategorien")
+        st.markdown("Klick hier, um die Kategorien aufzuklappen und die POIs auszuwählen, die du gerne in deiner Route haben möchtest. Die ausgewählten POIs werden dann auf der Karte angezeigt.")
 
         # Iteriere über die Hauptkategorien
         for category, subcategories in grouped_osm.items():
