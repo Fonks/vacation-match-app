@@ -21,7 +21,7 @@ from ui.osm_categories_selection import OSMFeatureSelector
 
 st.set_page_config(layout="wide")
 st.title("🏃‍♂️ Vacation Match!")
-st.subheader("Dein Strava-OpenStreetMap-Explorer")
+st.subheader("Entdecke deine Urlaubsrouten in deiner Stadt")
 
 st.markdown("Finde die besten Strava-Segmente in der Umgebung und entdecke interessante Orte mit OSM-Daten. ")
 
@@ -94,6 +94,7 @@ if st.sidebar.button("Anzeigen"):
     ## Hier wird die Methode fetch_strava_segments aufgerufen und die Daten verarbeitet.
 if st.session_state.df_strava_cache is not None:
     st.subheader("🟠 Strava Segmente")
+    st.markdown("Hier findest du die Koordinaten der Routen, die du in deiner Stadt laufen kannst. Klicke auf die Spalte 'Segment', um die Route auf der Karte anzuzeigen.")
     st.dataframe(st.session_state.df_strava_cache)
 
 
