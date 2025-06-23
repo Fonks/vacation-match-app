@@ -91,7 +91,8 @@ if st.sidebar.button("Anzeigen"):
 
     ## Zeigt die Tabelle mit den Strava-Segmenten an, die wir abgerufen haben.
 if st.session_state.df_strava_cache is not None:
-    st.subheader("🟠 Strava Segmente")
+    st.subheader("🟠 Laufrouten von Strava")
+    st.markdown("Hier findest du die Koordinaten der Routen, die du in deiner Stadt laufen kannst.")
     st.dataframe(st.session_state.df_strava_cache)
 
 
