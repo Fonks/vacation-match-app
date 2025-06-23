@@ -19,7 +19,7 @@ from ui.osm_categories_selection import OSMFeatureSelector
 
 st.set_page_config(layout="wide")
 st.title("🏃‍♂️ Vacation Match!")
-st.subheader("Dein Strava-OpenStreetMap-Explorer")
+st.subheader("Entdecke deine Urlaubsrouten in deiner Stadt")
 
 st.markdown("Finde die besten Strava-Segmente in der Umgebung und entdecke interessante Orte mit OSM-Daten. ")
 
