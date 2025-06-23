@@ -1,7 +1,6 @@
 import pydeck as pdk
 import pandas as pd
 from ui.constants import POI_CATEGORIES  # Import POI_CATEGORIES
-from data.osm_api import fetch_osm_data
 
 class MapLayer:
     @staticmethod

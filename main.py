@@ -6,8 +6,6 @@ from data.data_fetcher import DataFetcher
 from data.post_processor import DataProcessor
 from map.map_layers import MapLayer
 from map.map_renderer import MapRenderer
-
-
 from ui.osm_categories_selection import OSMFeatureSelector
 
 
@@ -89,23 +87,22 @@ if st.sidebar.button("Anzeigen"):
 #---------------------------------------------------
 
 
-# === Zeige Strava-Tabelle ===
+# === Zeige Strava-Tabelle ===---------------------
+
     ## Zeigt die Tabelle mit den Strava-Segmenten an, die wir abgerufen haben.
-    ## Hier wird die Methode fetch_strava_segments aufgerufen und die Daten verarbeitet.
 if st.session_state.df_strava_cache is not None:
-    st.subheader("🟠 Strava Segmente")
-    st.markdown("Hier findest du die Koordinaten der Routen, die du in deiner Stadt laufen kannst. Klicke auf die Spalte 'Segment', um die Route auf der Karte anzuzeigen.")
+    st.subheader("🟠 Laufrouten von Strava")
+    st.markdown("Hier findest du die Koordinaten der Routen, die du in deiner Stadt laufen kannst.")
     st.dataframe(st.session_state.df_strava_cache)
 
 
 
 
-#---------------------------------------------------
-
+#------------------------------
 
 
 # === Aneige der OSM-Auswahl ===
-    ## Hier werden die OSM-Daten in Kategorien gruppiert und angezeigt. Diese kann man da auswählen und es wird dann (hoffentlich) dann in der Karte als Punkte oder Icons angezeigt.
+    ## Hier werden die OSM-Daten in Kategorien gruppiert und angezeigt. Diese kann man da auswählen und es wird dann in der Karte als Punkte oder Icons angezeigt.
     ## Die Klasse OSMFeatureSelector findet ihr in der Datei osm_categories_selection.py.
     
 
@@ -115,18 +112,6 @@ if st.session_state.osm_data_cache:
         selected_osm_ids=st.session_state.selected_osm_ids
     )
     osm_selector.display_osm_features()
-
-
-
-#---------------------------------------------------
-
-
-
-# === POIs Icons auf der Karte ===
-##### PLACEHOLDER
-    ## Hier werden die POIs auf der Karte angezeigt. Die Icons werden in der Klasse OSMFeatureSelector verarbeitet und dann hier angezeigt.
-    ## Man könnte hier auch die Icons anpassen.
-    ## Man könnte die icons einzeln als scatterplotlayer anzeigen.
 
 
 

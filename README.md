@@ -1,7 +1,7 @@
 
 # VacationMatch! – Deine smarte Reiseplanung für aktive Urlaube
 
-**VacationMatch** ist eine datenbasierte Streamlit-App, die sportbegeisterten Nutzer:innen hilft, aus mehreren Städten die passende Destination für ihren aktiven Urlaub zu finden – basierend auf echten Strava-Daten und angereicherten OpenStreetMap-Informationen.
+**VacationMatch** soll eine datenbasierte Streamlit-App werden, die sportbegeisterten Nutzer:innen hilft, aus mehreren Städten die passende Destination für ihren aktiven Urlaub zu finden – basierend auf echten Strava-Daten und angereicherten OpenStreetMap-Informationen.
 
 ---
 
@@ -19,14 +19,14 @@ Kombiniert werden echte Routen aus **Strava** mit detaillierten Umgebungsdaten a
 
 ## Technologien
 
-| Bereich        | Tools/Technologien                      |
-|---------------|-----------------------------------------|
-| Frontend      | `Streamlit`, `streamlit_folium`         |
+| Bereich        | Tools/Technologien                        |
+|---------------|-----------------------------------------   |
+| Frontend      | `Streamlit`                                |
 | Backend       | `Python`, `Pandas`, `Requests`, `polyline` |
-| Kartendarstellung | `Folium`, `Pydeck`, `geopy`            |
+| Kartendarstellung | `Pydeck`                               |
 | Datenquellen  | `Strava API`, `OpenStreetMap Overpass API` |
-| Datenverarbeitung | `GeoPandas` (optional), eigene Pre-/Post-Processor |
-| Zusammenarbeit | `GitHub`, `.gitignore` für Caches etc. |
+| Datenverarbeitung | eigene Pre-/Post-Processor             |
+| Zusammenarbeit | `GitHub`                                  |
 
 ---
 
@@ -34,14 +34,14 @@ Kombiniert werden echte Routen aus **Strava** mit detaillierten Umgebungsdaten a
 
 | Datei | Beschreibung |
 |-------|--------------|
-| `strava_segments_riding.json` | Lokale Strava-Segmente für Radtouren (JSON-Format) |
-| `strava_segments_running.json` | Lokale Strava-Segmente für Laufstrecken (JSON-Format) |
-| `cache_manager.py` | Caching-Mechanismus für Datenabruf |
-| `data_fetcher.py` | Modul zum Laden und Kombinieren von Strava/OSM-Daten |
+| `strava_segments_riding.json` | Cache Datei Strava-Segmente für Radtouren (JSON-Format) |
+| `strava_segments_running.json` | Cache Datei Strava-Segmente für Laufstrecken (JSON-Format) |
+| `cache_manager.py` | Session State für Streamlit |
+| `data_fetcher.py` | Modul zum Aufruf der Strava/OSM APIs |
 | `osm_api.py` | Overpass API Abfragen zur OSM-Datengewinnung |
-| `post_processor.py` | Nachbearbeitung der kombinierten Strava-OSM-Daten |
-| `pre_processor.py` | Vorverarbeitung & Strukturierung der Rohdaten |
 | `strava_api.py` | OAuth2-Authentifizierung und Segmentabruf von Strava |
+| `pre_processor.py` | Vorbereitung der API Calls |
+| `post_processor.py` | Extraktion der notwendigen Strava Infos aus der API-Antwort |
 | `map_layers.py` | Definition von Kartenebenen und Icons |
 | `map_renderer.py` | Darstellung von Strecken und POIs auf der Streamlit-Karte |
 | `constants.py` | Zentrale Kategorien und Filteroptionen |
@@ -58,8 +58,8 @@ Kombiniert werden echte Routen aus **Strava** mit detaillierten Umgebungsdaten a
 
 1. Repository klonen:
 ```bash
-git clone https://github.com/dein-name/vacationmatch.git
-cd vacationmatch
+git clone https://github.com/Fonks/vacation-match-app.git
+cd vacation-match-app
 ```
 
 2. Virtuelle Umgebung erstellen und aktivieren:
@@ -73,9 +73,9 @@ source .venv/bin/activate  # oder .venv\Scripts\activate unter Windows
 pip install -r requirements.txt
 ```
 
-4. `.env` Datei erstellen (für Strava Token):
+4. `.env` Datei erstellen (für Strava Token, Strava Token bekommt ihr auf https://www.strava.com/settings/api):
 ```env
-STRAVA_CLIENT_ID=your_id
+STRAVA_CLIENT_ID=your_id 
 STRAVA_CLIENT_SECRET=your_secret
 STRAVA_REFRESH_TOKEN=your_token
 ```

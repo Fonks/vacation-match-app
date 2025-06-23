@@ -2,7 +2,6 @@ from data.strava_api import fetch_strava_segments
 from data.osm_api import fetch_osm_data
 import os
 import json
-import pandas as pd
 
 class DataFetcher:
     def __init__(self, bounds, sub_bounds, activity_type, use_cached=True):
